@@ -6,7 +6,7 @@ from NaviBaseClasses import *
 
 class AnimatedSubplot:
     """
-   Animated Subplot class.
+    Animated Subplot class.
 
     Methods:
         __init__(self, *plots, nrows, ncols)
@@ -69,6 +69,7 @@ class AnimatedSubplot:
                         ax.plot(cur_plot.ydata[j], label=cur_plot.labels[j])
                     else:
                         ax.plot(cur_plot.xdata, cur_plot.ydata[j], label=cur_plot.labels[j])
+                ax.relim()
                 # ax.legend()
             # ContourPlot
             elif isinstance(cur_plot, ContourPlot):
@@ -98,8 +99,8 @@ class AnimatedSubplot:
                 # clear current axes
                 ax.cla()
                 # replot contour
-                im = ax.contourf(cur_plot.xdata, cur_plot.ydata, cur_plot.zdata,
-                                 cmap=cur_plot.cmap, vmin=cur_plot.vmin, vmax=cur_plot.vmax, levels=cur_plot.levels)
+                ax.contourf(cur_plot.xdata, cur_plot.ydata, cur_plot.zdata,
+                            cmap=cur_plot.cmap, vmin=cur_plot.vmin, vmax=cur_plot.vmax, levels=cur_plot.levels)
                 # self.fig.colorbar(im, ax=ax)
-
-        plt.pause(0.01)
+        plt.draw()
+        plt.pause(0.001)
