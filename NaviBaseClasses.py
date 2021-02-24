@@ -57,7 +57,12 @@ class LinePlot(SubplotInfo):
             raise Exception('No ydata supplied to LinePlot.')
 
         super().__init__(ind, title, xlabel, ylabel)
-        self.xdata = xdata
+        if xdata is None:
+            m = ydata.shape[0]
+            self.xdata = [i for i in range(m)]
+        else:
+            self.xdata = xdata
+
         self.ydata = ydata if isinstance(ydata, (list, tuple)) else [ydata]
         self.labels = labels if labels else [f'Line {i}' for i in range(len(ydata))]
 
@@ -93,14 +98,14 @@ class ContourPlot(SubplotInfo):
 
         self.zdata = zdata
         if xdata is None:
-            m = zdata.shape[0]
-            self.xdata = np.arange(0, m, 1)
+            m = zdata.shape[1]
+            self.xdata = [i for i in range(m)]
         else:
             self.xdata = xdata
 
         if ydata is None:
-            n = zdata.shape[1]
-            self.ydata = np.arange(0, n, 1)
+            n = zdata.shape[0]
+            self.ydata = [j for j in range(n)]
         else:
             self.ydata = ydata
 

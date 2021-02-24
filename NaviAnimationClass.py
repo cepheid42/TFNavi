@@ -25,6 +25,7 @@ class AnimatedSubplot:
         self.nplots = len(plots)
         self.fig = None
         self.fig_title = fig_title
+        self.ylims = [(0.0, 0.0) for _ in range(self.nplots)]
         self._create_anim(nrows, ncols)
 
     def __del__(self):
@@ -64,13 +65,11 @@ class AnimatedSubplot:
             if isinstance(cur_plot, LinePlot):
                 # Plot each stacked line in the LinePlot
                 for j in range(len(cur_plot.ydata)):
-                    # With or without given xdata
-                    if cur_plot.xdata is None:
-                        ax.plot(cur_plot.ydata[j], label=cur_plot.labels[j])
-                    else:
-                        ax.plot(cur_plot.xdata, cur_plot.ydata[j], label=cur_plot.labels[j])
-                ax.relim()
+                    ax.plot(cur_plot.xdata, cur_plot.ydata[j], label=cur_plot.labels[j])
+
+                self.ylims[i] = ax.get_ylim()
                 # ax.legend()
+
             # ContourPlot
             elif isinstance(cur_plot, ContourPlot):
                 im = ax.contourf(cur_plot.xdata, cur_plot.ydata, cur_plot.zdata,
@@ -85,15 +84,22 @@ class AnimatedSubplot:
         """
         Updates subplots.
         """
-        axes = self.fig.axes
 
-        for i, ax in enumerate(axes):
+        for i, ax in enumerate(self.fig.axes):
             cur_plot = self.plots[i]
+            ymax = 0
+            ymin = 0
             if isinstance(cur_plot, LinePlot):
                 for line, ydata in zip(ax.get_lines(), cur_plot.ydata):
+                    ymin = min(ymin, np.amin(ydata))
+                    ymax = max(ymax, np.amax(ydata))
+
                     line.set_ydata(ydata)
 
-                ax.relim()
+                ymin = self.ylims[i][0] if ymin >= self.ylims[i][0] else 1.1 * ymin
+                ymax = self.ylims[i][1] if ymax <= self.ylims[i][1] else 1.1 * ymax
+
+                self.ylims[i] = ax.set_ylim([ymin, ymax])
 
             elif isinstance(cur_plot, ContourPlot):
                 # clear current axes
@@ -102,5 +108,5 @@ class AnimatedSubplot:
                 ax.contourf(cur_plot.xdata, cur_plot.ydata, cur_plot.zdata,
                             cmap=cur_plot.cmap, vmin=cur_plot.vmin, vmax=cur_plot.vmax, levels=cur_plot.levels)
                 # self.fig.colorbar(im, ax=ax)
-        plt.draw()
-        plt.pause(0.001)
+
+        plt.pause(0.01)
