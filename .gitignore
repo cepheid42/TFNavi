@@ -1,4 +1,4 @@
 .idea
 extras
-tests
 __pycache__
+.gitignore
