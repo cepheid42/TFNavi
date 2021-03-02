@@ -20,12 +20,15 @@ class AnimatedSubplot:
         ncols:     Number of subplot columns. Default is 1.
         fig_title: Title for whole plot figure.
     """
-    def __init__(self, *plots, nrows=1, ncols=1, fig_title=None):
+    def __init__(self, *plots, nrows=1, ncols=1, fig_title=None, hold_yscale=False):
         self.plots = list(plots)
         self.nplots = len(plots)
         self.fig = None
         self.fig_title = fig_title
+        self.frame_number = 1
+        self.fig_text_ptr = None
         self.ylims = [(0.0, 0.0) for _ in range(self.nplots)]
+
         self._create_anim(nrows, ncols)
 
     def __del__(self):
@@ -41,8 +44,10 @@ class AnimatedSubplot:
         use_indices = True if len(indices) == self.nplots else False
 
         # Add title if given
-        if self.fig_title is not None:
-            self.fig.suptitle(self.fig_title)
+        if self.fig_title is None:
+            self.fig_text_ptr = self.fig.suptitle('Frame 0')
+        else:
+            self.fig_text_ptr = self.fig.suptitle(self.fig_title)
 
         for i in range(self.nplots):
             cur_plot = self.plots[i]
@@ -72,6 +77,7 @@ class AnimatedSubplot:
 
             # ContourPlot
             elif isinstance(cur_plot, ContourPlot):
+                ax.set_aspect(aspect=1)
                 im = ax.contourf(cur_plot.xdata, cur_plot.ydata, cur_plot.zdata,
                                  cmap=cur_plot.cmap, vmin=cur_plot.vmin, vmax=cur_plot.vmax, levels=cur_plot.levels)
                 # add colorbar
@@ -96,10 +102,14 @@ class AnimatedSubplot:
 
                     line.set_ydata(ydata)
 
-                ymin = self.ylims[i][0] if ymin >= self.ylims[i][0] else 1.1 * ymin
-                ymax = self.ylims[i][1] if ymax <= self.ylims[i][1] else 1.1 * ymax
+                if cur_plot.hold_yscale:
+                    ymin = self.ylims[i][0] if ymin >= self.ylims[i][0] else 1.1 * ymin
+                    ymax = self.ylims[i][1] if ymax <= self.ylims[i][1] else 1.1 * ymax
 
-                self.ylims[i] = ax.set_ylim([ymin, ymax])
+                    self.ylims[i] = ax.set_ylim([ymin, ymax])
+                else:
+                    ax.relim()
+                    ax.autoscale()
 
             elif isinstance(cur_plot, ContourPlot):
                 # clear current axes
@@ -108,5 +118,6 @@ class AnimatedSubplot:
                 ax.contourf(cur_plot.xdata, cur_plot.ydata, cur_plot.zdata,
                             cmap=cur_plot.cmap, vmin=cur_plot.vmin, vmax=cur_plot.vmax, levels=cur_plot.levels)
                 # self.fig.colorbar(im, ax=ax)
-
-        plt.pause(0.01)
+        self.frame_number += 1
+        self.fig_text_ptr.set_text(f'Frame {self.frame_number}')
+        plt.pause(0.08)

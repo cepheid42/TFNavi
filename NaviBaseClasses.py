@@ -52,7 +52,7 @@ class LinePlot(SubplotInfo):
         xlabel:  Subplot x-axis label. Default is none.
         ylabel:  Subplot y-axis label. Default is none.
     """
-    def __init__(self, xdata=None, ydata=None, labels=(), ind=1, title='', xlabel='', ylabel=''):
+    def __init__(self, xdata=None, ydata=None, labels=(), ind=1, title='', xlabel='', ylabel='', hold_yscale=False):
         if ydata is None:
             raise Exception('No ydata supplied to LinePlot.')
 
@@ -65,6 +65,7 @@ class LinePlot(SubplotInfo):
 
         self.ydata = ydata if isinstance(ydata, (list, tuple)) else [ydata]
         self.labels = labels if labels else [f'Line {i}' for i in range(len(ydata))]
+        self.hold_yscale = hold_yscale
 
 
 class ContourPlot(SubplotInfo):
