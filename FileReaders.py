@@ -32,6 +32,7 @@ def load_field_npy(path):
 
 def load_field_csv(path, shape=None):
     store = []
+    prefix = path.split('/')[-1]
 
     if os.path.isdir(path):
         n_files = sum(os.path.isfile(os.path.join(path, f)) for f in os.listdir(path))
@@ -39,9 +40,13 @@ def load_field_csv(path, shape=None):
         raise Exception('load_csv(): Not a valid path.')
 
     for n in range(n_files):
-        filename = path + f'/{path[-2:]}_{n}.csv'
+        filename = path + f'/{prefix}_{n}.csv'
 
-        temp = np.genfromtxt(filename, delimiter=',')
-        store.append(temp.reshape(shape))
+        temp = np.genfromtxt(filename, dtype=np.float32, delimiter=',')
+
+        if shape is None:
+            store.append(temp.reshape(-1))
+        else:
+            store.append(temp.reshape(shape))
 
     return store
